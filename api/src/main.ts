@@ -10,8 +10,21 @@ async function bootstrap() {
   app.use(json({ limit: '2mb' }));
   app.use(urlencoded({ extended: true, limit: '2mb' }));
   app.use(helmet());
+  const rawFrontendUrl = process.env.FRONTEND_URL || '*';
+  let allowedOrigins: string | string[] = '*';
+  
+  if (rawFrontendUrl !== '*') {
+    allowedOrigins = rawFrontendUrl.split(',').map(url => {
+      let trimmed = url.trim();
+      if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        trimmed = `https://${trimmed}`;
+      }
+      return trimmed;
+    });
+  }
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || '*',
+    origin: allowedOrigins,
     credentials: true,
   });
   
