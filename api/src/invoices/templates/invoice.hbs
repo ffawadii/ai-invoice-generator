@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .container {
+      padding: 40px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 50px;
+    }
+    .header .sender-name {
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .header .title-block {
+      text-align: right;
+    }
+    .header .title {
+      font-size: 36px;
+      color: #333;
+      margin: 0;
+      line-height: 1;
+      font-weight: normal;
+    }
+    .header .invoice-number {
+      color: #666;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .details {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+    }
+    .details .bill-to {
+      font-size: 12px;
+    }
+    .details .bill-to .label {
+      color: #666;
+      margin-bottom: 5px;
+    }
+    .details .bill-to .client-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    .details .meta {
+      font-size: 12px;
+      width: 300px;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .meta-row .label {
+      color: #666;
+      width: 100px;
+      text-align: right;
+      padding-right: 20px;
+    }
+    .meta-row .value {
+      width: 100px;
+      text-align: right;
+      color: #333;
+    }
+    .balance-due {
+      background-color: #f2f2f2;
+      padding: 8px 0;
+      margin-top: 5px;
+    }
+    .balance-due .label, .balance-due .value {
+      color: #333;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+    }
+    th {
+      background-color: #333;
+      color: #fff;
+      text-align: right;
+      padding: 12px;
+      font-size: 12px;
+    }
+    th.left { text-align: left; }
+    td {
+      padding: 12px;
+      text-align: right;
+      font-size: 12px;
+      color: #333;
+    }
+    td.left { text-align: left; font-weight: bold; }
+    .totals {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .totals-box {
+      width: 300px;
+    }
+    .totals-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .totals-row .label {
+      color: #666;
+      width: 100px;
+      text-align: right;
+      padding-right: 20px;
+    }
+    .totals-row .value {
+      width: 100px;
+      text-align: right;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="sender-info">
+        {{#if invoice.logoUrl}}
+        <img src="{{invoice.logoUrl}}" alt="Logo" style="max-height: 80px; max-width: 200px; margin-bottom: 10px;" />
+        {{/if}}
+        <div class="sender-name">{{senderName}}</div>
+      </div>
+      <div class="title-block">
+        <h1 class="title">INVOICE</h1>
+        <div class="invoice-number"># {{invoice.number}}</div>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="bill-to">
+        <div class="label">Bill To:</div>
+        <div class="client-name">{{invoice.client.name}}</div>
+        {{#if invoice.client.email}}<div>{{invoice.client.email}}</div>{{/if}}
+        {{#if invoice.client.address}}<div>{{invoice.client.address}}</div>{{/if}}
+      </div>
+      <div class="meta">
+        <div class="meta-row">
+          <div class="label">Date:</div>
+          <div class="value">{{formattedDate}}</div>
+        </div>
+        <div class="meta-row balance-due">
+          <div class="label">Balance Due:</div>
+          <div class="value">{{formatCurrency invoice.total invoice.currency}}</div>
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="left">Item</th>
+          <th style="width: 80px;">Quantity</th>
+          <th style="width: 100px;">Rate</th>
+          <th style="width: 100px;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each invoice.items}}
+        <tr>
+          <td class="left">{{this.description}}</td>
+          <td>{{this.quantity}}</td>
+          <td>{{formatCurrency this.unitPrice ../invoice.currency}}</td>
+          <td>{{formatCurrency this.lineTotal ../invoice.currency}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div class="totals-box">
+        <div class="totals-row">
+          <div class="label">Subtotal:</div>
+          <div class="value">{{formatCurrency invoice.subtotal invoice.currency}}</div>
+        </div>
+        <div class="totals-row">
+          <div class="label">Tax ({{invoice.taxRate}}%):</div>
+          <div class="value">{{formatCurrency invoice.taxAmount invoice.currency}}</div>
+        </div>
+        <div class="totals-row" style="color: #333; margin-top: 5px;">
+          <div class="label">Total:</div>
+          <div class="value">{{formatCurrency invoice.total invoice.currency}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime  @default(now())
+  clients      Client[]
+  invoices     Invoice[]
+}
+
+model PendingUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  otp          String
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Client {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  email     String?
+  address   String?
+  createdAt DateTime  @default(now())
+  invoices  Invoice[]
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
+model Invoice {
+  id        String          @id @default(uuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId  String
+  client    Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  number    String
+  status    InvoiceStatus   @default(DRAFT)
+  issueDate DateTime?
+  dueDate   DateTime?
+  currency     String          @default("USD")
+  from         String?
+  logoUrl      String?
+  billTo       String?
+  shipTo       String?
+  paymentTerms String?
+  poNumber     String?
+  notes        String?
+  terms        String?
+  subtotal     Decimal         @db.Decimal(10, 2)
+  taxRate      Decimal         @db.Decimal(5, 2)
+  taxAmount    Decimal         @db.Decimal(10, 2)
+  discount     Decimal?        @db.Decimal(10, 2)
+  shipping     Decimal?        @db.Decimal(10, 2)
+  total        Decimal         @db.Decimal(10, 2)
+  amountPaid   Decimal?        @db.Decimal(10, 2)
+  createdAt    DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  items     InvoiceItem[]
+
+  @@unique([userId, number])
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  lineTotal   Decimal  @db.Decimal(10, 2)
+}
